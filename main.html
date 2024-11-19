@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Controlled Slider</title>
+    <style>
+        .slider {
+            position: relative;
+            max-width: 600px;
+            /* Kích thước tối đa của slider */
+            height: 400px;
+            /* Chiều cao cố định cho slider */
+            margin: auto;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            /* Màu nền nếu ảnh không phủ đầy */
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            /* Chiều cao slide luôn bằng chiều cao slider */
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            /* Màu nền cho khoảng trống */
+        }
+
+        .slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            /* Hiển thị toàn bộ ảnh mà không cắt bớt */
+        }
+
+        .navigation {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            pointer-events: none;
+            /* Vô hiệu hóa sự kiện cho toàn bộ container */
+        }
+
+        .button {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            pointer-events: all;
+            /* Bật sự kiện chỉ cho nút */
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Slider Container -->
+    <div class="slider">
+        <div class="slides" id="slides">
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+            <div class="slide"><img src="image1.jpg" alt="Image 1"></div>
+            <div class="slide"><img src="image2.jpg" alt="Image 2"></div>
+            <div class="slide"><img src="image3.jpg" alt="Image 3"></div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="navigation">
+            <button class="button prev" onclick="previousSlide()">Previous</button>
+            <button class="button next" onclick="nextSlide()">Next</button>
+        </div>
+    </div>
+
+    <!-- WebSocket Status -->
+    <div id="status">Đang kết nối WebSocket...</div>
+
+    <script>
+        let currentIndex = 0;
+        const slides = document.getElementById('slides');
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const statusElement = document.getElementById('status');
+
+        // Hàm hiển thị slide dựa trên chỉ số
+        function showSlide(index) {
+            if (index >= totalSlides) {
+                currentIndex = 0;
+            } else if (index < 0) {
+                currentIndex = totalSlides - 1;
+            } else {
+                currentIndex = index;
+            }
+            slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        // Điều khiển nút "Next"
+        function nextSlide() {
+            showSlide(currentIndex + 1);
+        }
+
+        // Điều khiển nút "Previous"
+        function previousSlide() {
+            showSlide(currentIndex - 1);
+        }
+
+        // Kết nối tới WebSocket Server
+        const socket = new WebSocket('ws://127.0.0.1:8765');
+
+        socket.addEventListener('open', function () {
+            console.log("WebSocket connection established.");
+            statusElement.textContent = "WebSocket kết nối thành công!";
+        });
+
+        socket.addEventListener('message', function (event) {
+            console.log('Received:', event.data);
+            statusElement.textContent = "Received: " + event.data;
+            if (event.data === 'Right') {
+                nextSlide();
+            } else if (event.data === 'Left') {
+                previousSlide();
+            }
+        });
+
+        socket.addEventListener('close', function () {
+            console.log("WebSocket connection closed.");
+            statusElement.textContent = "WebSocket kết nối đã bị đóng.";
+        });
+
+        socket.addEventListener('error', function () {
+            console.log("WebSocket error occurred.");
+            statusElement.textContent = "Lỗi WebSocket.";
+        });
+    </script>
+
+</body>
+
+</html>
